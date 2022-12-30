@@ -1,16 +1,19 @@
 package com.restapi.restapi5.service;
 
+import com.restapi.restapi5.constants.KafkaConstants;
 import com.restapi.restapi5.entity.Grade;
 import com.restapi.restapi5.entity.Student;
 import com.restapi.restapi5.entity.StudentGrades;
 import com.restapi.restapi5.exception.StudentNotFoundException;
 import com.restapi.restapi5.repository.StudentRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class StudentServiceImp implements StudentService{
     @Autowired
     private StudentRepository studentRepository;
@@ -25,15 +29,26 @@ public class StudentServiceImp implements StudentService{
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private KafkaTemplate kafkaTemplate;
+
     private Logger logger= LoggerFactory.getLogger(StudentServiceImp.class);
     @Override
     public Student saveStudent(Student student) {
+        kafkaTemplate.send(KafkaConstants.TOPIC,student);
+        log.info("Message send to the student_update topic");
+        log.info("Student with id "+student.getId()+" saved in the repository");
         return studentRepository.save(student);
     }
 
     @Override
     public List<Student> saveAllStudent(List<Student> studentList) {
         List<Student> students = studentRepository.saveAll(studentList);
+        for(Student student: studentList){
+            kafkaTemplate.send(KafkaConstants.TOPIC,student);
+            log.info("Message send to the student_update topic");
+            log.info("Student with id "+student.getId()+" saved in the repository");
+        }
         return students;
     }
 
