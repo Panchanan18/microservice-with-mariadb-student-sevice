@@ -1,6 +1,7 @@
 package com.restapi.restapi5.service;
 
 import com.restapi.restapi5.entity.Student;
+import com.restapi.restapi5.entity.StudentGrades;
 import com.restapi.restapi5.exception.StudentNotFoundException;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface StudentService {
     Student deleteById(int studentId) throws StudentNotFoundException;
 
     Student updateStudent(int studentId, Student student) throws StudentNotFoundException;
+
+    StudentGrades getAllGrades(int id);
 }

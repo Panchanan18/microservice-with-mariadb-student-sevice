@@ -1,12 +1,18 @@
 package com.restapi.restapi5.service;
 
+import com.restapi.restapi5.entity.Grade;
 import com.restapi.restapi5.entity.Student;
+import com.restapi.restapi5.entity.StudentGrades;
 import com.restapi.restapi5.exception.StudentNotFoundException;
 import com.restapi.restapi5.repository.StudentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +21,9 @@ import java.util.Optional;
 public class StudentServiceImp implements StudentService{
     @Autowired
     private StudentRepository studentRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     private Logger logger= LoggerFactory.getLogger(StudentServiceImp.class);
     @Override
@@ -71,5 +80,21 @@ public class StudentServiceImp implements StudentService{
         updatedStudent.setGender(student.getGender());
         studentRepository.save(updatedStudent);
         return updatedStudent;
+    }
+
+    @Override
+    public StudentGrades getAllGrades(int id) {
+        Student student = studentRepository.findById(id).get();
+        ResponseEntity<List<Grade>> responseEntity =
+                restTemplate.exchange(
+                        "http://localhost:8082/grades/getAllGrades/"+id,
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<List<Grade>>() {}
+                );
+        List<Grade> gradeList = responseEntity.getBody();
+        StudentGrades studentGrades= new StudentGrades(student,gradeList);
+        return studentGrades;
+
     }
 }

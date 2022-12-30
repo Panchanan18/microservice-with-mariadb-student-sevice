@@ -1,6 +1,7 @@
 package com.restapi.restapi5.controller;
 
 import com.restapi.restapi5.entity.Student;
+import com.restapi.restapi5.entity.StudentGrades;
 import com.restapi.restapi5.exception.StudentNotFoundException;
 import com.restapi.restapi5.service.StudentService;
 import io.swagger.annotations.ApiOperation;
@@ -63,6 +64,11 @@ public class StudentController {
 
     public Student updateStudent(@PathVariable("Id") int studentId, @RequestBody Student student) throws StudentNotFoundException {
        return studentService.updateStudent(studentId,student);
+    }
+
+    @GetMapping("/getAllGrades/{id}")
+    public StudentGrades getAllGrades(@PathVariable int id){
+        return studentService.getAllGrades(id);
     }
 
 
