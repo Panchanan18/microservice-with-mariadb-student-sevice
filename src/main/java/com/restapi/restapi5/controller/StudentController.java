@@ -2,6 +2,7 @@ package com.restapi.restapi5.controller;
 
 import com.restapi.restapi5.entity.Student;
 import com.restapi.restapi5.entity.StudentGrades;
+import com.restapi.restapi5.entity.StudentResponse;
 import com.restapi.restapi5.exception.StudentNotFoundException;
 import com.restapi.restapi5.service.StudentService;
 import io.swagger.annotations.ApiOperation;
@@ -24,7 +25,7 @@ public class StudentController {
 
     @PostMapping("/create")
     @ApiOperation(value = "Create and Save Student")
-    public Student  saveStudent(@RequestBody Student student){
+    public StudentResponse saveStudent(@RequestBody Student student){
         logger.info("Added :"+ student.toString());
        return studentService.saveStudent(student);
     }
@@ -54,7 +55,7 @@ public class StudentController {
     @DeleteMapping("/deleteById/{Id}")
     @ApiOperation(value = "Delete Student By Id")
 
-    public Student deleteById(@PathVariable("Id") int studentId)throws  StudentNotFoundException{
+    public StudentResponse deleteById(@PathVariable("Id") int studentId)throws  StudentNotFoundException{
         logger.info("Student with id "+studentId+" has been removed from database");
         return studentService.deleteById(studentId);
     }
@@ -62,7 +63,7 @@ public class StudentController {
     @PutMapping("/update/{Id}")
     @ApiOperation(value = "Update Student By Id")
 
-    public Student updateStudent(@PathVariable("Id") int studentId, @RequestBody Student student) throws StudentNotFoundException {
+    public StudentResponse updateStudent(@PathVariable("Id") int studentId, @RequestBody Student student) throws StudentNotFoundException {
        return studentService.updateStudent(studentId,student);
     }
 

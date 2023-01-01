@@ -4,6 +4,7 @@ import com.restapi.restapi5.constants.KafkaConstants;
 import com.restapi.restapi5.entity.Grade;
 import com.restapi.restapi5.entity.Student;
 import com.restapi.restapi5.entity.StudentGrades;
+import com.restapi.restapi5.entity.StudentResponse;
 import com.restapi.restapi5.exception.StudentNotFoundException;
 import com.restapi.restapi5.repository.StudentRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -34,11 +35,18 @@ public class StudentServiceImp implements StudentService{
 
     private Logger logger= LoggerFactory.getLogger(StudentServiceImp.class);
     @Override
-    public Student saveStudent(Student student) {
+    public StudentResponse saveStudent(Student student) {
+
+        if (studentRepository.existsById(student.getId())){
+            return new StudentResponse(student.getId(),student.getName(),student.getDepartment(),
+                    student.getAge(),student.getGender(),"Already Exists");
+        }
         kafkaTemplate.send(KafkaConstants.TOPIC,student);
         log.info("Message send to the student_update topic");
         log.info("Student with id "+student.getId()+" saved in the repository");
-        return studentRepository.save(student);
+        studentRepository.save(student);
+        return new StudentResponse(student.getId(),student.getName(),student.getDepartment(),
+                student.getAge(),student.getGender(),"Created");
     }
 
     @Override
@@ -67,7 +75,7 @@ public class StudentServiceImp implements StudentService{
     }
 
     @Override
-    public Student deleteById(int studentId) throws StudentNotFoundException {
+    public StudentResponse deleteById(int studentId) throws StudentNotFoundException {
         Optional<Student> student=studentRepository.findById(studentId);
         if(!student.isPresent()){
             logger.info("Student with Id "+studentId+" does not exists");
@@ -76,11 +84,12 @@ public class StudentServiceImp implements StudentService{
         studentRepository.deleteById(studentId);
         logger.info("Student with id "+studentId+" has been removed from database");
 
-        return student.get();
+        return new StudentResponse(student.get().getId(),student.get().getName(),student.get().getDepartment(),
+                student.get().getAge(),student.get().getGender(),"Deleted");
     }
 
     @Override
-    public Student updateStudent(int studentId, Student student) throws StudentNotFoundException {
+    public StudentResponse updateStudent(int studentId, Student student) throws StudentNotFoundException {
         Optional<Student> studentFromDb=studentRepository.findById(studentId);
         if(!studentFromDb.isPresent()){
             logger.info("Student with Id "+studentId+" does not exists");
@@ -94,7 +103,8 @@ public class StudentServiceImp implements StudentService{
         updatedStudent.setDepartment(student.getDepartment());
         updatedStudent.setGender(student.getGender());
         studentRepository.save(updatedStudent);
-        return updatedStudent;
+        return new StudentResponse(updatedStudent.getId(),updatedStudent.getName(),updatedStudent.getDepartment(),
+                updatedStudent.getAge(),updatedStudent.getGender(),"Updated");
     }
 
     @Override
